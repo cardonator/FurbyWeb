@@ -2,7 +2,7 @@
 // Using Web Bluetooth
 
 const furby = new FurBLE();
-const THEME_STORAGE_KEY = 'pyfluff-theme';
+const THEME_STORAGE_KEY = 'furbyweb-theme';
 
 // Theme Logic
 function getStoredTheme() {

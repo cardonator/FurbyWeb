@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ec4899;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="furGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#a855f7;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:0.2" />
+    </linearGradient>
+    <linearGradient id="eyeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e0e7ff;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="pupilGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#1f2937;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+    </radialGradient>
+    <linearGradient id="antennaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#ec4899;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="earGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ec4899;stop-opacity:0.7" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.7" />
+    </linearGradient>
+    <linearGradient id="beakGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="url(#bgGradient)" opacity="0.15"/>
+  
+  <!-- Furby body - oval shaped head -->
+  <ellipse cx="100" cy="100" rx="65" ry="78" fill="url(#furGradient)"/>
+  <ellipse cx="100" cy="100" rx="62" ry="75" fill="none" stroke="url(#bgGradient)" stroke-width="2" opacity="0.3"/>
+  
+  <!-- Left ear - sticking out horizontally -->
+  <ellipse cx="35" cy="80" rx="18" ry="30" fill="url(#earGradient)" transform="rotate(-25 35 80)"/>
+  <ellipse cx="35" cy="80" rx="10" ry="20" fill="rgba(0,0,0,0.1)" transform="rotate(-25 35 80)"/>
+  
+  <!-- Right ear - sticking out horizontally -->
+  <ellipse cx="165" cy="80" rx="18" ry="30" fill="url(#earGradient)" transform="rotate(25 165 80)"/>
+  <ellipse cx="165" cy="80" rx="10" ry="20" fill="rgba(0,0,0,0.1)" transform="rotate(25 165 80)"/>
+  
+  <!-- Antenna with glowing tip -->
+  <line x1="100" y1="22" x2="100" y2="8" stroke="url(#antennaGradient)" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="100" cy="6" r="7" fill="url(#antennaGradient)">
+    <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="100" cy="6" r="10" fill="url(#antennaGradient)" opacity="0.3">
+    <animate attributeName="r" values="10;14;10" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Large expressive eyes -->
+  <ellipse cx="72" cy="85" rx="24" ry="32" fill="url(#eyeGradient)" stroke="#8b5cf6" stroke-width="2" opacity="0.9"/>
+  <ellipse cx="72" cy="88" rx="14" ry="20" fill="url(#pupilGradient)"/>
+  <circle cx="70" cy="82" r="6" fill="white" opacity="0.9"/>
+  <circle cx="75" cy="85" r="3" fill="white" opacity="0.6"/>
+  
+  <ellipse cx="128" cy="85" rx="24" ry="32" fill="url(#eyeGradient)" stroke="#8b5cf6" stroke-width="2" opacity="0.9"/>
+  <ellipse cx="128" cy="88" rx="14" ry="20" fill="url(#pupilGradient)"/>
+  <circle cx="126" cy="82" r="6" fill="white" opacity="0.9"/>
+  <circle cx="131" cy="85" r="3" fill="white" opacity="0.6"/>
+  
+  <!-- Bird beak - triangular and curved -->
+  <path d="M 100 115 Q 95 125 100 130 Q 105 125 100 115" fill="url(#beakGradient)" stroke="#d97706" stroke-width="1.5"/>
+  <path d="M 100 115 L 85 122 L 100 125 Z" fill="url(#beakGradient)" opacity="0.9"/>
+  <path d="M 100 115 L 115 122 L 100 125 Z" fill="url(#beakGradient)" opacity="0.9"/>
+  <path d="M 100 125 L 100 130" stroke="#d97706" stroke-width="1" opacity="0.5"/>
+  
+  <!-- Bird feet at bottom -->
+  <!-- Left foot -->
+  <g opacity="0.8">
+    <!-- Left leg -->
+    <line x1="75" y1="170" x2="75" y2="185" stroke="url(#beakGradient)" stroke-width="3" stroke-linecap="round"/>
+    <!-- Left foot toes -->
+    <path d="M 75 185 L 65 192 M 75 185 L 75 195 M 75 185 L 85 192" stroke="url(#beakGradient)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  </g>
+  
+  <!-- Right foot -->
+  <g opacity="0.8">
+    <!-- Right leg -->
+    <line x1="125" y1="170" x2="125" y2="185" stroke="url(#beakGradient)" stroke-width="3" stroke-linecap="round"/>
+    <!-- Right foot toes -->
+    <path d="M 125 185 L 115 192 M 125 185 L 125 195 M 125 185 L 135 192" stroke="url(#beakGradient)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  </g>
+  
+  <!-- Web icon overlay (subtle, bottom right) -->
+  <g opacity="0.25" transform="translate(142, 150)">
+    <circle cx="12" cy="12" r="14" fill="none" stroke="url(#bgGradient)" stroke-width="1.5"/>
+    <line x1="12" y1="-2" x2="12" y2="26" stroke="url(#bgGradient)" stroke-width="1"/>
+    <line x1="-2" y1="12" x2="26" y2="12" stroke="url(#bgGradient)" stroke-width="1"/>
+    <ellipse cx="12" cy="12" rx="14" ry="6" fill="none" stroke="url(#bgGradient)" stroke-width="1"/>
+  </g>
+  
+  <!-- Decorative sparkles -->
+  <circle cx="30" cy="50" r="3" fill="#fbbf24" opacity="0.7">
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="170" cy="50" r="3" fill="#ec4899" opacity="0.7">
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="45" cy="170" r="2.5" fill="#8b5cf6" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="155" cy="170" r="2.5" fill="#10b981" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="2.2s" repeatCount="indefinite"/>
+  </circle>
+</svg>

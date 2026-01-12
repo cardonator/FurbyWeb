@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light dark">
-    <title>PyFluff - Furby Connect Control</title>
+    <title>FurbyWeb - Furby Connect Control</title>
     <link rel="stylesheet" href="style.css">
     <script>
         (function () {
             try {
-                const storageKey = 'pyfluff-theme';
+                const storageKey = 'furbyweb-theme';
                 const storedTheme = localStorage.getItem(storageKey);
                 const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                 if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
@@ -28,8 +28,8 @@
         <!-- Top Status Bar -->
         <header class="top-bar">
             <div class="logo-section">
-                <img src="images/pyfluff.svg" alt="PyFluff" class="logo">
-                <h1>PyFluff</h1>
+                <img src="images/furbyweb.svg" alt="FurbyWeb" class="logo">
+                <h1>FurbyWeb</h1>
             </div>
             <div class="status">
                 <span id="status-indicator" class="status-indicator"></span>
