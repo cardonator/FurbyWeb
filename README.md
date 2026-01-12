@@ -2,6 +2,14 @@
 
 This is a standalone JavaScript port of PyFluff that runs entirely in the browser using the Web Bluetooth API. This is helpful if you are just trying to ensure your Furby is working properly, or if you want to see what it can do without having to install Python or a backend server.
 
+## Try it Live
+
+You can try the app right now in your browser without installing anything:
+
+[**Launch Furby Web Controller**](https://cardonator.github.io/FurbyWeb/index.html)
+
+**Note**: This runs entirely locally in your browser. No data is sent to any server and it does not phone home.
+
 ## Requirements
 
 * A browser with Web Bluetooth support (Chrome, Edge, or Bluefy on iOS).
