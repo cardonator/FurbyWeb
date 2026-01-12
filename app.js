@@ -245,6 +245,7 @@ newBtn.addEventListener('click', async () => {
 
 // DLC Upload
 let selectedDlcFile = null;
+const MAX_DLC_FILE_SIZE = 16 * 1024 * 1024; // 16MB
 
 document.getElementById('btn-select-dlc').addEventListener('click', () => {
     document.getElementById('dlc-file-input').click();
@@ -260,10 +261,9 @@ document.getElementById('dlc-file-input').addEventListener('change', (e) => {
             return;
         }
         
-        // Validate file size (max 16MB)
-        const MAX_FILE_SIZE = 16 * 1024 * 1024; // 16MB
-        if (file.size > MAX_FILE_SIZE) {
-            log(`File too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB`, 'error');
+        // Validate file size
+        if (file.size > MAX_DLC_FILE_SIZE) {
+            log(`File too large. Maximum size is ${MAX_DLC_FILE_SIZE / (1024 * 1024)}MB`, 'error');
             e.target.value = '';
             return;
         }

@@ -325,7 +325,13 @@ class FurBLE {
 
     buildDlcAnnounceCommand(fileSize, slot, filename) {
         // Build DLC announce command with correct byte order
-        // Format: 0x50 0x00 SIZE(3 bytes) SLOT FILENAME(12 bytes) 0x00 0x00
+        // Total: 20 bytes
+        // Byte 0: Command (0x50)
+        // Byte 1: Padding (0x00)
+        // Bytes 2-4: File size (3 bytes, little endian)
+        // Byte 5: Slot number
+        // Bytes 6-17: Filename (12 bytes, ASCII, padded with nulls)
+        // Bytes 18-19: Trailing nulls (0x00 0x00)
         const buffer = new Uint8Array(20);
         
         // Command byte and padding
@@ -343,10 +349,11 @@ class FurBLE {
         // Filename (12 bytes, ASCII only, truncate and pad with nulls)
         // Convert to ASCII by removing non-ASCII characters and truncating
         const asciiFilename = filename.replace(/[^\x00-\x7F]/g, '').substring(0, 12);
-        const filenameBytes = new TextEncoder().encode(asciiFilename);
-        buffer.set(filenameBytes.slice(0, 12), 6);
+        for (let i = 0; i < asciiFilename.length && i < 12; i++) {
+            buffer[6 + i] = asciiFilename.charCodeAt(i);
+        }
         
-        // Trailing nulls
+        // Trailing nulls (already zero-initialized, but explicit for clarity)
         buffer[18] = 0x00;
         buffer[19] = 0x00;
         
