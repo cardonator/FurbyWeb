@@ -1,6 +1,6 @@
 
 // Furby Connect Web Bluetooth Implementation
-// Ported from PyFluff (Python) by Antigravity
+// Based on PyFluff concepts
 
 const FurbyUUIDs = {
     // Services
