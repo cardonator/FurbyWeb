@@ -76,13 +76,15 @@ class FurBLE {
         this.gpWriteChar = null;
         this.gpListenChar = null;
         this.nordicWriteChar = null;
+        this.fileWriteChar = null;
         this.isIdle = false;
         this.idleInterval = null;
         this.logCallback = console.log;
 
         // Event listeners
         this.listeners = {
-            'sensor': []
+            'sensor': [],
+            'fileTransfer': []
         };
     }
 
@@ -122,6 +124,7 @@ class FurBLE {
             this.gpWriteChar = await this.fluffService.getCharacteristic(FurbyUUIDs.CHAR_GENERALPLUS_WRITE);
             this.gpListenChar = await this.fluffService.getCharacteristic(FurbyUUIDs.CHAR_GENERALPLUS_LISTEN);
             this.nordicWriteChar = await this.fluffService.getCharacteristic(FurbyUUIDs.CHAR_NORDIC_WRITE);
+            this.fileWriteChar = await this.fluffService.getCharacteristic(FurbyUUIDs.CHAR_FILE_WRITE);
 
             this.log("Starting Notifications...");
             await this.gpListenChar.startNotifications();
@@ -167,6 +170,9 @@ class FurBLE {
             } else if (responseId === GeneralPlusResponse.FURBY_MESSAGE) {
                 // Handle furby messages (actions, state changes)
                 // this.log(`Furby Message: ${data[1]}`, 'info');
+            } else if (responseId === GeneralPlusResponse.FILE_TRANSFER_MODE) {
+                // Handle file transfer status
+                this.emit('fileTransfer', data);
             }
         }
     }
@@ -291,5 +297,214 @@ class FurBLE {
             console.warn("Failed to read device info", e);
         }
         return info;
+    }
+
+    // DLC Support
+
+    async writeFile(data) {
+        if (!this.fileWriteChar) {
+            throw new Error("File write characteristic not available");
+        }
+        try {
+            await this.fileWriteChar.writeValueWithoutResponse(data);
+        } catch (e) {
+            console.error("File write failed", e);
+            throw e;
+        }
+    }
+
+    async enableNordicPacketAck(enable) {
+        // Enable/disable Nordic packet acknowledgment
+        const cmd = new Uint8Array([enable ? 0x01 : 0x00]);
+        try {
+            await this.nordicWriteChar.writeValueWithoutResponse(cmd);
+        } catch (e) {
+            console.error("Nordic ACK toggle failed", e);
+        }
+    }
+
+    buildDlcAnnounceCommand(fileSize, slot, filename) {
+        // Build DLC announce command with correct byte order
+        // Total: 20 bytes
+        // Byte 0: Command (0x50)
+        // Byte 1: Padding (0x00)
+        // Bytes 2-4: File size (3 bytes, little endian)
+        // Byte 5: Slot number
+        // Bytes 6-17: Filename (12 bytes, ASCII, padded with nulls)
+        // Bytes 18-19: Trailing nulls (0x00 0x00)
+        const buffer = new Uint8Array(20);
+        
+        // Command byte and padding
+        buffer[0] = GeneralPlusCommand.ANNOUNCE_DLC_UPLOAD; // 0x50
+        buffer[1] = 0x00;
+        
+        // File size (3 bytes, little endian)
+        buffer[2] = fileSize & 0xFF;
+        buffer[3] = (fileSize >> 8) & 0xFF;
+        buffer[4] = (fileSize >> 16) & 0xFF;
+        
+        // Slot
+        buffer[5] = slot;
+        
+        // Filename (12 bytes, ASCII only, truncate and pad with nulls)
+        // Convert to ASCII by removing non-ASCII characters and truncating
+        const asciiFilename = filename.replace(/[^\x00-\x7F]/g, '').substring(0, 12);
+        for (let i = 0; i < asciiFilename.length && i < 12; i++) {
+            buffer[6 + i] = asciiFilename.charCodeAt(i);
+        }
+        
+        // Trailing nulls (already zero-initialized, but explicit for clarity)
+        buffer[18] = 0x00;
+        buffer[19] = 0x00;
+        
+        return buffer;
+    }
+
+    async uploadDlc(file, slot = 0, progressCallback = null) {
+        const FILE_CHUNK_SIZE = 20;
+        const CHUNK_DELAY = 5; // milliseconds
+        
+        let transferReady = false;
+        let transferComplete = false;
+        let transferError = null;
+
+        // Setup file transfer listener
+        const fileTransferHandler = (data) => {
+            if (data.length < 2 || data[0] !== 0x24) return;
+            
+            const mode = data[1];
+            this.log(`File transfer status: ${mode}`);
+            
+            // FileTransferMode enum values
+            // 0x00: IDLE
+            // 0x01: READY_TO_RECEIVE
+            // 0x02: RECEIVING
+            // 0x03: FILE_RECEIVED_OK
+            // 0x04: FILE_RECEIVED_ERROR
+            // 0x05: FILE_TRANSFER_TIMEOUT
+            
+            if (mode === 0x01) { // READY_TO_RECEIVE
+                transferReady = true;
+            } else if (mode === 0x03) { // FILE_RECEIVED_OK
+                transferComplete = true;
+            } else if (mode === 0x04) { // FILE_RECEIVED_ERROR
+                transferError = "File transfer failed";
+                transferComplete = true;
+            } else if (mode === 0x05) { // FILE_TRANSFER_TIMEOUT
+                transferError = "File transfer timeout";
+                transferComplete = true;
+            }
+        };
+
+        this.on('fileTransfer', fileTransferHandler);
+
+        try {
+            // Read file as array buffer
+            const fileData = await file.arrayBuffer();
+            const fileSize = fileData.byteLength;
+            const fileName = file.name;
+
+            this.log(`Uploading DLC: ${fileName} (${fileSize} bytes) to slot ${slot}`, 'info');
+
+            // Enable Nordic packet ACK for monitoring
+            await this.enableNordicPacketAck(true);
+
+            // Announce DLC upload
+            const announceCmd = this.buildDlcAnnounceCommand(fileSize, slot, fileName);
+            await this.writeGp(announceCmd);
+
+            // Wait for ready signal (timeout after 10 seconds)
+            const readyTimeout = Date.now() + 10000;
+            while (!transferReady && Date.now() < readyTimeout) {
+                await new Promise(r => setTimeout(r, 100));
+            }
+
+            if (!transferReady) {
+                throw new Error("Furby did not respond to DLC upload announcement");
+            }
+
+            this.log("Furby ready, uploading data...", 'info');
+
+            // Upload file in chunks
+            const dataView = new Uint8Array(fileData);
+            let offset = 0;
+            let chunkCount = 0;
+
+            while (offset < fileSize) {
+                const chunkEnd = Math.min(offset + FILE_CHUNK_SIZE, fileSize);
+                const chunk = dataView.slice(offset, chunkEnd);
+                
+                await this.writeFile(chunk);
+                offset = chunkEnd;
+                chunkCount++;
+
+                // Small delay to prevent overwhelming Furby
+                await new Promise(r => setTimeout(r, CHUNK_DELAY));
+
+                // Progress callback
+                const progress = (offset / fileSize) * 100;
+                if (progressCallback) {
+                    progressCallback(progress, offset, fileSize);
+                }
+
+                // Progress logging every 100 chunks
+                if (chunkCount % 100 === 0) {
+                    this.log(`Upload progress: ${progress.toFixed(1)}%`, 'info');
+                }
+            }
+
+            this.log(`Uploaded ${chunkCount} chunks, waiting for confirmation...`, 'info');
+
+            // Wait for transfer complete (timeout after 60 seconds)
+            const completeTimeout = Date.now() + 60000;
+            while (!transferComplete && Date.now() < completeTimeout) {
+                await new Promise(r => setTimeout(r, 100));
+            }
+
+            if (!transferComplete) {
+                throw new Error("Timeout waiting for upload confirmation");
+            }
+
+            if (transferError) {
+                throw new Error(transferError);
+            }
+
+            this.log("DLC upload complete!", 'success');
+
+        } catch (error) {
+            this.log(`DLC upload failed: ${error.message}`, 'error');
+            throw error;
+        } finally {
+            // Remove listener
+            this.off('fileTransfer', fileTransferHandler);
+        }
+    }
+
+    async loadDlc(slot) {
+        // Command to load DLC from slot
+        const cmd = new Uint8Array([GeneralPlusCommand.LOAD_DLC, slot]);
+        await this.writeGp(cmd);
+        this.log(`Loading DLC from slot ${slot}`, 'info');
+    }
+
+    async activateDlc(slot) {
+        // Command to activate DLC
+        const cmd = new Uint8Array([GeneralPlusCommand.ACTIVATE_DLC, slot]);
+        await this.writeGp(cmd);
+        this.log(`Activating DLC in slot ${slot}`, 'info');
+    }
+
+    async deactivateDlc() {
+        // Command to deactivate DLC
+        const cmd = new Uint8Array([GeneralPlusCommand.DEACTIVATE_DLC]);
+        await this.writeGp(cmd);
+        this.log("Deactivating DLC", 'info');
+    }
+
+    async deleteDlcSlot(slot) {
+        // Command to delete DLC from slot
+        const cmd = new Uint8Array([GeneralPlusCommand.DELETE_DLC_SLOT, slot]);
+        await this.writeGp(cmd);
+        this.log(`Deleting DLC from slot ${slot}`, 'info');
     }
 }
