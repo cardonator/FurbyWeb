@@ -2,6 +2,14 @@
 
 This is a standalone JavaScript port of PyFluff that runs entirely in the browser using the Web Bluetooth API. This is helpful if you are just trying to ensure your Furby is working properly, or if you want to see what it can do without having to install Python or a backend server.
 
+## Features
+
+* **Control Furby Connect** - Change antenna colors, trigger actions, set moods
+* **Upload DLC Files** - Upload DownLoadable Content (DLC) files directly from your browser
+* **No Backend Required** - Everything runs locally in your browser
+* **Dark Mode** - Toggle between light and dark themes
+* **Modern UI** - Clean, responsive design that works on desktop and mobile
+
 ## Try it Live
 
 You can try the app right now in your browser without installing anything:
@@ -34,7 +42,30 @@ Then open your browser to: [http://localhost:8080](http://localhost:8080)
 
 1. Click the "Connect" button.
 2. Select your Furby from the browser's Bluetooth picker.
-3. Once connected, use the controls to change antenna color, trigger actions, or set moods.
+3. Once connected, use the controls to:
+   - Change antenna color
+   - Trigger actions
+   - Set moods
+   - Change Furby's name
+   - **Upload DLC files** to customize your Furby's content
+
+## DLC Upload
+
+DLC (DownLoadable Content) files contain custom audio, animations, and other content for your Furby Connect. With FurbyWeb, you can upload DLC files directly from your browser:
+
+1. Click "Select DLC File" to choose a .dlc file
+2. Select a slot (0-7) to upload to
+3. Click "Upload" to transfer the file to your Furby
+4. Use "Load DLC" to load the content from a slot
+5. Use "Activate" to enable the DLC content
+6. Use "Deactivate" to return to default content
+7. Use "Delete Slot" to remove a DLC file from a slot
+
+**Note**: DLC uploads may take several minutes depending on file size. A progress bar will show the upload status.
+
+### DLC File Sources
+
+Since the official Furby Connect servers are no longer online, you may need to source DLC files from community archives or create your own custom content.
 
 ## Notes
 

@@ -243,6 +243,106 @@ newBtn.addEventListener('click', async () => {
     }
 });
 
+// DLC Upload
+let selectedDlcFile = null;
+
+document.getElementById('btn-select-dlc').addEventListener('click', () => {
+    document.getElementById('dlc-file-input').click();
+});
+
+document.getElementById('dlc-file-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        selectedDlcFile = file;
+        document.getElementById('dlc-file-name').textContent = file.name;
+        document.getElementById('btn-upload-dlc').disabled = false;
+        log(`Selected DLC file: ${file.name} (${file.size} bytes)`, 'info');
+    }
+});
+
+document.getElementById('btn-upload-dlc').addEventListener('click', async () => {
+    if (!selectedDlcFile) {
+        log('No DLC file selected', 'error');
+        return;
+    }
+
+    const slot = parseInt(document.getElementById('dlc-slot').value);
+    const progressBar = document.getElementById('dlc-progress');
+    const progressFill = document.getElementById('dlc-progress-fill');
+    const progressText = document.getElementById('dlc-progress-text');
+    const uploadBtn = document.getElementById('btn-upload-dlc');
+
+    try {
+        // Show progress bar
+        progressBar.classList.remove('hidden');
+        progressFill.style.width = '0%';
+        progressText.textContent = '0%';
+        uploadBtn.disabled = true;
+
+        log(`Starting DLC upload to slot ${slot}...`, 'info');
+
+        await furby.uploadDlc(selectedDlcFile, slot, (progress, uploaded, total) => {
+            const progressPct = Math.round(progress);
+            progressFill.style.width = `${progressPct}%`;
+            progressText.textContent = `${progressPct}% (${uploaded}/${total} bytes)`;
+        });
+
+        log('DLC upload successful!', 'success');
+        
+        // Reset after a delay
+        setTimeout(() => {
+            progressBar.classList.add('hidden');
+            uploadBtn.disabled = false;
+        }, 2000);
+
+    } catch (e) {
+        log(`DLC upload failed: ${e.message}`, 'error');
+        progressBar.classList.add('hidden');
+        uploadBtn.disabled = false;
+    }
+});
+
+document.getElementById('btn-load-dlc').addEventListener('click', async () => {
+    const slot = parseInt(document.getElementById('dlc-slot').value);
+    try {
+        await furby.loadDlc(slot);
+        log(`Load DLC command sent for slot ${slot}`, 'success');
+    } catch (e) {
+        log(`Failed to load DLC: ${e}`, 'error');
+    }
+});
+
+document.getElementById('btn-activate-dlc').addEventListener('click', async () => {
+    const slot = parseInt(document.getElementById('dlc-slot').value);
+    try {
+        await furby.activateDlc(slot);
+        log(`Activate DLC command sent for slot ${slot}`, 'success');
+    } catch (e) {
+        log(`Failed to activate DLC: ${e}`, 'error');
+    }
+});
+
+document.getElementById('btn-deactivate-dlc').addEventListener('click', async () => {
+    try {
+        await furby.deactivateDlc();
+        log('Deactivate DLC command sent', 'success');
+    } catch (e) {
+        log(`Failed to deactivate DLC: ${e}`, 'error');
+    }
+});
+
+document.getElementById('btn-delete-dlc').addEventListener('click', async () => {
+    const slot = parseInt(document.getElementById('dlc-slot').value);
+    if (confirm(`Are you sure you want to delete DLC from slot ${slot}?`)) {
+        try {
+            await furby.deleteDlcSlot(slot);
+            log(`Delete DLC command sent for slot ${slot}`, 'success');
+        } catch (e) {
+            log(`Failed to delete DLC: ${e}`, 'error');
+        }
+    }
+});
+
 // Initialization
 initThemeToggle();
 updateStatus(false);
