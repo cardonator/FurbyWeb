@@ -53,6 +53,19 @@ Then open your browser to: [http://localhost:8080](http://localhost:8080)
 
 DLC (DownLoadable Content) files contain custom audio, animations, and other content for your Furby Connect. With FurbyWeb, you can upload DLC files directly from your browser:
 
+### Before Uploading DLC
+
+**Important**: For best results, reset your Furby before uploading DLC files:
+
+1. Turn your Furby upside down
+2. Press and hold the tongue sensor
+3. While holding the tongue, pull the tail
+4. Wait for Furby to power cycle
+
+This reset helps ensure a clean state for DLC uploads and can prevent transfer errors.
+
+### Upload Steps
+
 1. Click "Select DLC File" to choose a .dlc file
 2. Select a slot (0-7) to upload to
 3. Click "Upload" to transfer the file to your Furby
