@@ -253,6 +253,21 @@ document.getElementById('btn-select-dlc').addEventListener('click', () => {
 document.getElementById('dlc-file-input').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
+        // Validate file extension
+        if (!file.name.toLowerCase().endsWith('.dlc')) {
+            log('Invalid file type. Please select a .dlc file', 'error');
+            e.target.value = '';
+            return;
+        }
+        
+        // Validate file size (max 16MB)
+        const MAX_FILE_SIZE = 16 * 1024 * 1024; // 16MB
+        if (file.size > MAX_FILE_SIZE) {
+            log(`File too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB`, 'error');
+            e.target.value = '';
+            return;
+        }
+        
         selectedDlcFile = file;
         document.getElementById('dlc-file-name').textContent = file.name;
         document.getElementById('btn-upload-dlc').disabled = false;
@@ -333,6 +348,10 @@ document.getElementById('btn-deactivate-dlc').addEventListener('click', async ()
 
 document.getElementById('btn-delete-dlc').addEventListener('click', async () => {
     const slot = parseInt(document.getElementById('dlc-slot').value);
+    if (isNaN(slot) || slot < 0 || slot > 7) {
+        log('Invalid slot number', 'error');
+        return;
+    }
     if (confirm(`Are you sure you want to delete DLC from slot ${slot}?`)) {
         try {
             await furby.deleteDlcSlot(slot);

@@ -340,9 +340,11 @@ class FurBLE {
         // Slot
         buffer[5] = slot;
         
-        // Filename (12 bytes, ASCII, padded with nulls)
-        const filenameBytes = new TextEncoder().encode(filename.substring(0, 12));
-        buffer.set(filenameBytes, 6);
+        // Filename (12 bytes, ASCII only, truncate and pad with nulls)
+        // Convert to ASCII by removing non-ASCII characters and truncating
+        const asciiFilename = filename.replace(/[^\x00-\x7F]/g, '').substring(0, 12);
+        const filenameBytes = new TextEncoder().encode(asciiFilename);
+        buffer.set(filenameBytes.slice(0, 12), 6);
         
         // Trailing nulls
         buffer[18] = 0x00;
@@ -351,11 +353,12 @@ class FurBLE {
         return buffer;
     }
 
-    async uploadDlc(file, slot = 2, progressCallback = null) {
+    async uploadDlc(file, slot = 0, progressCallback = null) {
         const FILE_CHUNK_SIZE = 20;
         const CHUNK_DELAY = 5; // milliseconds
         
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve, reject) => {
+            const performUpload = async () => {
             let transferReady = false;
             let transferComplete = false;
             let transferError = null;
@@ -471,6 +474,9 @@ class FurBLE {
                 // Remove listener
                 this.off('fileTransfer', fileTransferHandler);
             }
+            };
+            
+            performUpload().then(resolve).catch(reject);
         });
     }
 
